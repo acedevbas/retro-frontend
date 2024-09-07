@@ -1,0 +1,31 @@
+.emoji-picker-tooltip {
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    padding: 8px;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-gap: 4px;
+    width: 220px; /* Ширина, чтобы вместить 8 эмодзи на ряд */
+    position: relative;
+  }
+  
+  .emoji-picker-arrow {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #fff;
+  }
+  
+  
+  .emoji-picker-content {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-gap: 5px;
+  }
+  

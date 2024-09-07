@@ -1,0 +1,24 @@
+{
+    "extends": ["eslint:recommended", "plugin:react/recommended"],
+    "plugins": ["react"],
+    "env": {
+      "browser": true,
+      "es6": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2020,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
+    "rules": {
+      // Дополнительно можете добавить или изменить правила по необходимости
+    },
+    "settings": {
+      "react": {
+        "version": "detect" // автоматически определяет версию React
+      }
+    }
+  }
+  
