@@ -5,10 +5,11 @@ import { Typography, Button } from 'antd';
 
 function Home() {
   const navigate = useNavigate();
-
+  const API_URL = process.env.REACT_APP_API_URL;
+  
   const handleCreateRoom = async () => {
     try {
-      const response = await fetch('http://localhost:3000/rooms', {
+      const response = await fetch(`${API_URL}/rooms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
