@@ -3,4 +3,4 @@ services:
   retro-frontend:
     build: .
     ports:
-      - "6666:3000"
+      - "3346:3346"
