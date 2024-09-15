@@ -1,34 +1,26 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { Layout } from 'antd';
-import Home from './components/Home'; // Import the Home component
+import Home from './components/Home';
 import Room from './components/Room';
-import './styles.css'; // Import your global styles
 
-const { Content } = Layout;
+import './styles.css';
 
 function App() {
   return (
-    <Layout
-      style={{
-        minHeight: '100vh',
-      }}
-    >
-      <Router>
-        <Content
-          style={{
-            width: '100%',
-            minWidth: '100%',
-          }}
-        >
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/room/:roomId" element={<Room />} />
-          </Routes>
-        </Content>
-      </Router>
-    </Layout>
+    <Router>
+      <Routes>
+        {/* Маршрут для Home, без хедера */}
+        <Route path="/" element={<Home />} />
+
+        {/* Маршрут для Room, с хедером */}
+        <Route path="/room/:roomId" element={<Room />}>
+          <Route path="" element={<Room />} />
+          {/* Добавьте другие вложенные маршруты внутри Room при необходимости */}
+        </Route>
+
+        {/* Другие маршруты можно добавлять здесь */}
+      </Routes>
+    </Router>
   );
 }
 

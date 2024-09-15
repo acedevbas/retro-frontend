@@ -7,3 +7,9 @@ body {
     font-family: 'Roboto', sans-serif; /* Set a global font if needed */
 
   }
+
+
+  .room {
+    min-height: 100vh; /* Это установит минимальную высоту равной высоте viewport */
+    background-color: red; /* Это сделает фон красным */
+  }

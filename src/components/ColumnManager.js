@@ -1,272 +1,159 @@
-import React, { useState, useEffect } from "react";
-import PropTypes from "prop-types";
-import {
-  Row,
-  Col,
-  Card,
-  Input,
-  Button,
-  Avatar,
-  Typography,
-  Space,
-  Dropdown,
-  Menu,
-  Tooltip,
-  Modal,
-  Popover,
-} from "antd";
-import { PlusOutlined, EllipsisOutlined, SmileOutlined } from "@ant-design/icons";
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Modal, Typography, Card, Space } from 'antd';
+import { InfoCircleOutlined } from '@ant-design/icons';
+import PropTypes from 'prop-types';
+import CardList from './CardList';
+import AddCardForm from './AddCardForm';
+import PhaseHandler from './PhaseHandler';
+import { LayoutGroup } from 'framer-motion'; // Updated import
 
-const { TextArea } = Input;
+const ColumnManager = ({ socket, roomId, columns, userId, cards, addCard }) => {
+  const [currentPhaseId, setCurrentPhaseId] = useState(null);
+  const [cardToDelete, setCardToDelete] = useState(null);
+  const [localCards, setLocalCards] = useState(cards);
+  const [topCardsById, setTopCardsById] = useState({});
 
-const customEmojis = ["😍", "😁", "🥰", "🤠", "🥴", "🧐", "🥺", "🥸", "💩", "🤡", "😰", "😭", "👌", "👍", "👎"];
-
-const enlargeEmojis = (text) => {
-  return text.replace(
-    /([\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{1FB00}-\u{1FBFF}])/gu,
-    "<span style='font-size: 1.5em;'>$1</span>"
-  );
-};
-
-const ColumnManager = ({ columns, cards, addCard, editColumn, deleteColumn, deleteCard }) => {
-  const [newCardText, setNewCardText] = useState({});
-  const [editingColumn, setEditingColumn] = useState(null);
-  const [newColumnName, setNewColumnName] = useState("");
-  const [usernames, setUsernames] = useState({});
-
+  // Обновляем локальные карточки при изменении cards
   useEffect(() => {
-    const fetchUsernames = async () => {
-      const usersToFetch = Array.from(new Set(cards.map((card) => card.author))).filter(
-        (id) => !usernames[id]
-      );
+    setLocalCards(cards);
+  }, [cards]);
 
-      const promises = usersToFetch.map((author) =>
-        fetch(`http://localhost:3000/users/${author}`)
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.username) {
-              setUsernames((prev) => ({ ...prev, [author]: data.username }));
-            }
-          })
-          .catch((error) => console.error("Error fetching user:", error))
-      );
+  // Обновляем ранги топ-3 карточек при изменении cards или currentPhaseId
+  useEffect(() => {
+    if (currentPhaseId === 'Discussion' || currentPhaseId === 'Finish') {
+      // Сортируем все карточки по количеству голосов
+      const sortedCards = [...localCards].sort((a, b) => (b.votes || 0) - (a.votes || 0));
 
-      await Promise.all(promises);
+      // Присваиваем ранги топ-3 карточкам
+      const newTopCardsById = {};
+      for (let i = 0; i < sortedCards.length && i < 3; i++) {
+        const card = sortedCards[i];
+        const rank = i + 1;
+        newTopCardsById[card._id] = rank;
+      }
+      setTopCardsById(newTopCardsById);
+
+      // Обновляем локальные карточки с сортировкой
+      setLocalCards(sortedCards);
+    } else {
+      setTopCardsById({});
+      setLocalCards(cards);
+    }
+  }, [localCards, currentPhaseId]);
+
+  // Обновляем голоса при получении события через сокет
+  useEffect(() => {
+    const handleUpdateVotes = ({ cardId, votes }) => {
+      setLocalCards((prevCards) =>
+        prevCards.map((card) =>
+          card._id === cardId ? { ...card, votes } : card
+        )
+      );
     };
 
-    fetchUsernames();
-  }, [cards, usernames]);
+    if (socket) {
+      socket.on('updateVotes', handleUpdateVotes);
+    }
 
-  const handleCardTextChange = (text, columnId) => {
-    setNewCardText((prevText) => ({ ...prevText, [columnId]: text }));
-  };
+    return () => {
+      if (socket) {
+        socket.off('updateVotes', handleUpdateVotes);
+      }
+    };
+  }, [socket]);
 
-  const addEmojiToText = (emoji, columnId) => {
-    setNewCardText((prevText) => ({
-      ...prevText,
-      [columnId]: (prevText[columnId] || "") + emoji,
-    }));
-  };
-
-  const openRenameModal = (columnId, name) => {
-    setEditingColumn(columnId);
-    setNewColumnName(name);
-  };
-
-  const handleEditColumn = () => {
-    if (editingColumn !== null) {
-      editColumn(editingColumn, newColumnName);
-      setEditingColumn(null);
+  const handleDeleteCard = () => {
+    if (socket && cardToDelete) {
+      socket.emit('deleteCard', { roomId, cardId: cardToDelete });
+      setCardToDelete(null);
     }
   };
 
-  const emojiContent = (columnId) => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-      {customEmojis.map((emoji) => (
-        <span
-          key={emoji}
-          style={{ fontSize: '24px', cursor: 'pointer', margin: '5px' }}
-          onClick={() => addEmojiToText(emoji, columnId)}
-        >
-          {emoji}
-        </span>
-      ))}
-    </div>
-  );
-
   return (
-    <Row gutter={[16, 16]}>
-      {columns.map((column) => (
-        <Col xs={24} sm={12} md={8} key={column._id}>
-          <Card
-            title={
-              <Space align="center" style={{ justifyContent: "space-between", width: "100%" }}>
-                <Typography.Title level={4} style={{ margin: 0 }}>
-                  {column.name}
-                </Typography.Title>
-                <Dropdown
-                  overlay={
-                    <Menu>
-                      <Menu.Item key="edit" onClick={() => openRenameModal(column._id, column.name)}>
-                        Переименовать
-                      </Menu.Item>
-                      <Menu.Item key="delete" onClick={() => deleteColumn(column._id)}>
-                        Удалить
-                      </Menu.Item>
-                    </Menu>
-                  }
-                  trigger={["click"]}
-                >
-                  <Button shape="circle" icon={<EllipsisOutlined />} size="small" />
-                </Dropdown>
-              </Space>
-            }
-            bordered
-            style={{ backgroundColor: "#f9f9f9", position: "relative" }}
-          >
-            <Space style={{ marginBottom: "16px", width: "100%" }} direction="vertical">
-              <div style={{ position: "relative", width: "100%" }}>
-                <TextArea
-                  placeholder="Добавить карточку"
-                  value={newCardText[column._id] || ""}
-                  onChange={(e) => handleCardTextChange(e.target.value, column._id)}
-                  autoSize={{ minRows: 2, maxRows: 6 }}
-                  style={{
-                    width: "100%",
-                    paddingRight: "40px", // Пространство для иконки
-                  }}
-                />
-                <Popover content={emojiContent(column._id)} trigger="click">
-                  <Button
-                    type="text"
-                    icon={<SmileOutlined />}
-                    style={{
-                      position: "absolute",
-                      right: "10px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      fontSize: "18px",
-                      color: "rgba(0,0,0,0.45)",
-                    }}
-                  />
-                </Popover>
-              </div>
+    <div>
+      <PhaseHandler socket={socket} roomId={roomId} setCurrentPhaseId={setCurrentPhaseId} />
 
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                style={{ width: "100%" }}
-                onClick={() => {
-                  if (newCardText[column._id]) {
-                    addCard(column._id, newCardText[column._id]);
-                    setNewCardText((prevText) => ({ ...prevText, [column._id]: "" }));
-                  }
-                }}
-              >
-                Добавить карточку
-              </Button>
+      {currentPhaseId === 'Preparation' ? (
+        <Row justify="center" align="middle" style={{ height: '80vh', textAlign: 'center' }}>
+          <div>
+            <Space direction="vertical" size="large" align="center">
+              <InfoCircleOutlined style={{ fontSize: '64px', color: '#1890ff' }} />
+              <Typography.Title level={3} style={{ margin: 0 }}>
+                Ожидаем подключение всех участников
+              </Typography.Title>
+              <Typography.Text style={{ fontSize: '16px', color: '#595959' }}>
+                Как будете готовы, переключайтесь на следующий этап.
+              </Typography.Text>
             </Space>
+          </div>
+        </Row>
+      ) : (
+        currentPhaseId && (
+          <LayoutGroup>
+            <Row gutter={[16, 16]} wrap={false} align="top">
+              {columns.map((column) => {
+                // Получаем карточки для текущей колонки из локального состояния
+                const columnCards = localCards.filter((card) => card.columnId === column._id);
 
-            <Row gutter={[16, 16]}>
-              {cards
-                .filter((card) => card.columnId === column._id)
-                .map((card) => (
-                  <Col xs={24} key={card._id}>
+                return (
+                  <Col xs={24} sm={12} md={8} key={column._id}>
                     <Card
-                      hoverable={false}
+                      title={
+                        <Typography.Title level={4} style={{ margin: 0 }}>
+                          {column.name}
+                        </Typography.Title>
+                      }
+                      bordered
                       style={{
-                        backgroundColor: "#ffffff",
-                        marginBottom: "16px",
-                        border: "1px solid #dcdcdc",
-                        boxShadow: "none",
-                        display: "flex",
-                        flexDirection: "column",
+                        backgroundColor: '#f9f9f9',
+                        position: 'relative',
                       }}
-                      bodyStyle={{ padding: "0" }}
                     >
-                      <div
-                        style={{
-                          padding: "16px",
-                          borderBottom: "1px dashed #dcdcdc",
-                          flexGrow: 1,
-                        }}
-                      >
-                        <div
-                          dangerouslySetInnerHTML={{ __html: enlargeEmojis(card.content) }}
-                          style={{ fontSize: "16px", whiteSpace: "pre-wrap" }}
-                        />
-                      </div>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          padding: "8px",
-                          backgroundColor: "#edf3f7",
-                        }}
-                      >
-                        <Tooltip title={usernames[card.author] || "Неизвестно"}>
-                          <Avatar size="small" style={{ backgroundColor: "#6ac185" }}>
-                            {usernames[card.author] ? usernames[card.author][0].toUpperCase() : "?"}
-                          </Avatar>
-                        </Tooltip>
-                        <Dropdown
-                          overlay={
-                            <Menu>
-                              <Menu.Item key="delete" onClick={() => deleteCard(card._id)}>
-                                Удалить
-                              </Menu.Item>
-                            </Menu>
-                          }
-                          trigger={["click"]}
-                        >
-                          <Button shape="circle" icon={<EllipsisOutlined />} size="small" />
-                        </Dropdown>
-                      </div>
+                      {currentPhaseId === 'Create Cards' && (
+                        <AddCardForm columnId={column._id} addCard={addCard} />
+                      )}
+                      <CardList
+                        cards={columnCards}
+                        currentPhaseId={currentPhaseId}
+                        userId={userId}
+                        socket={socket}
+                        roomId={roomId}
+                        setCardToDelete={setCardToDelete}
+                        topCardsById={topCardsById}
+                      />
                     </Card>
                   </Col>
-                ))}
+                );
+              })}
             </Row>
-          </Card>
-        </Col>
-      ))}
-
-      {/* Модальное окно для переименования столбца */}
+            </LayoutGroup>
+        )
+      )}
       <Modal
-        title="Переименовать столбец"
-        open={!!editingColumn}
-        onOk={handleEditColumn}
-        onCancel={() => setEditingColumn(null)}
+        title="Подтверждение удаления"
+        visible={!!cardToDelete}
+        onOk={handleDeleteCard}
+        onCancel={() => setCardToDelete(null)}
+        cancelText="Отмена"
       >
-        <Input
-          value={newColumnName}
-          placeholder="Новое название столбца"
-          onChange={(e) => setNewColumnName(e.target.value)}
-        />
+        <p>Вы уверены, что хотите удалить эту карточку?</p>
       </Modal>
-    </Row>
+    </div>
   );
 };
 
 ColumnManager.propTypes = {
+  socket: PropTypes.object.isRequired,
+  roomId: PropTypes.string.isRequired,
   columns: PropTypes.arrayOf(
     PropTypes.shape({
       _id: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
     })
   ).isRequired,
-  cards: PropTypes.arrayOf(
-    PropTypes.shape({
-      _id: PropTypes.string.isRequired,
-      content: PropTypes.string.isRequired,
-      author: PropTypes.string.isRequired,
-      columnId: PropTypes.string.isRequired,
-    })
-  ).isRequired,
+  userId: PropTypes.string.isRequired,
+  cards: PropTypes.arrayOf(PropTypes.object).isRequired,
   addCard: PropTypes.func.isRequired,
-  editColumn: PropTypes.func.isRequired,
-  deleteColumn: PropTypes.func.isRequired,
-  deleteCard: PropTypes.func.isRequired,
 };
 
 export default ColumnManager;

@@ -1,0 +1,10 @@
+/* Room.css */
+.room-layout {
+    min-height: 100vh;
+  }
+  
+  .room-content {
+    min-height: calc(100vh - 64px); /* Вычитаем высоту header */
+    display: flex;
+    flex-direction: column;
+  }

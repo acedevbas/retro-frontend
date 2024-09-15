@@ -1,0 +1,13 @@
+/* HeaderComponent.css */
+.note-input-container {
+    position: relative;
+  }
+  
+  .note-input-icons {
+    position: absolute;
+    bottom: 30px; /* Расстояние от нижнего края TextArea */
+    left: 5px; /* Расстояние от левого края TextArea */
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }

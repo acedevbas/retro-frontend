@@ -1,0 +1,26 @@
+/* styles.css или ваш CSS-файл */
+.card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Адаптивное количество колонок */
+    grid-gap: 3px; /* Расстояние между карточками */
+    padding: 8px;
+    box-sizing: border-box;
+  }
+  
+  .card-list > div {
+    flex: 1 0 100%; /* По умолчанию карточка занимает 100% ширины */
+  }
+  
+  /* Медиа-запрос для экранов с шириной 1920px и больше */
+  @media screen and (min-width: 1920px) {
+    .card-list > div {
+      flex: 1 0 50%; /* Карточка занимает 50% ширины */
+    }
+  }
+  
+  /* Дополнительные стили по вашему желанию */
+  .card-list > div {
+    /* Например, можно добавить отступы между карточками */
+    box-sizing: border-box;
+    padding: 8px;
+  }
