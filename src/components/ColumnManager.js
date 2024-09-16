@@ -18,7 +18,7 @@ const ColumnManager = ({ socket, roomId, columns, userId, cards, addCard }) => {
     setLocalCards(cards);
   }, [cards]);
 
-  // Обновляем ранги топ-3 карточек при изменении cards или currentPhaseId
+  // Обновляем ранги топ-3 карточек при изменении currentPhaseId
   useEffect(() => {
     if (currentPhaseId === 'Discussion' || currentPhaseId === 'Finish') {
       // Сортируем все карточки по количеству голосов
@@ -39,7 +39,7 @@ const ColumnManager = ({ socket, roomId, columns, userId, cards, addCard }) => {
       setTopCardsById({});
       setLocalCards(cards);
     }
-  }, [localCards, currentPhaseId]);
+  }, [currentPhaseId]);
 
   // Обновляем голоса при получении события через сокет
   useEffect(() => {
@@ -126,7 +126,7 @@ const ColumnManager = ({ socket, roomId, columns, userId, cards, addCard }) => {
                 );
               })}
             </Row>
-            </LayoutGroup>
+          </LayoutGroup>
         )
       )}
       <Modal
