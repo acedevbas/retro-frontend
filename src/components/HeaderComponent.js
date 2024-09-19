@@ -2,26 +2,26 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Layout, Typography, Menu, Space, Button, Drawer, Grid, List, Avatar,
-  ConfigProvider
+  ConfigProvider, Modal, Input, message
 } from 'antd';
 import {
   UserOutlined, HomeOutlined, MenuOutlined, FileTextOutlined,
-  ShareAltOutlined, ExclamationCircleOutlined
+  ShareAltOutlined, CopyOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import moment from 'moment';
 import 'moment/locale/ru';
-
+import NotesDrawerContent from './header/NotesDrawerContent';
 moment.locale('ru');
 
 const { Header } = Layout;
 const { useBreakpoint } = Grid;
 
-const HeaderComponent = ({ users }) => {
+const HeaderComponent = ({ roomId, users, socket }) => {
   const [participantsDrawerOpen, setParticipantsDrawerOpen] = useState(false);
   const [menuDrawerOpen, setMenuDrawerOpen] = useState(false);
   const [notesDrawerOpen, setNotesDrawerOpen] = useState(false);
-  const [shareDrawerOpen, setShareDrawerOpen] = useState(false);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
   const screens = useBreakpoint();
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,8 +36,27 @@ const HeaderComponent = ({ users }) => {
     setDrawerOpen(true);
   };
 
-  const closeDrawer = (setDrawerOpen) => {
-    setDrawerOpen(false);
+  const closeDrawer = (setDrawerOpen) => setDrawerOpen(false);
+
+  const showModal = () => {
+    setShareModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setShareModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setShareModalVisible(false);
+  };
+
+  const copyToClipboard = () => {
+    const url = `${window.location.origin}/room/${roomId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      message.success('Ссылка скопирована в буфер обмена!');
+    }).catch(() => {
+      message.error('Не удалось скопировать ссылку.');
+    });
   };
 
   const menuItems = [
@@ -79,7 +98,7 @@ const HeaderComponent = ({ users }) => {
       icon: <ShareAltOutlined />,
       label: 'Поделиться',
       onClick: () => {
-        showDrawer(setShareDrawerOpen);
+        showModal();
         if (!screens.md) {
           closeDrawer(setMenuDrawerOpen);
         }
@@ -102,19 +121,16 @@ const HeaderComponent = ({ users }) => {
           justifyContent: 'space-between',
         }}
       >
-        {/* Логотип и название */}
         <Space>
-       
           <Typography.Title level={4} style={{ margin: 0 }}>
-          <img
-            src="/logo.png" // Убедитесь, что логотип находится по этому пути
-            alt="Logo"
-            style={{ width: 150}}
-          />
+            <img
+              src="/logo.png" // Убедитесь, что логотип находится по этому пути
+              alt="Logo"
+              style={{ width: 150 }}
+            />
           </Typography.Title>
         </Space>
 
-        {/* Меню и информация о комнате */}
         {screens.md ? (
           <Space align="center">
             <Menu
@@ -122,7 +138,7 @@ const HeaderComponent = ({ users }) => {
               theme="light"
               items={menuItems}
               style={{ borderBottom: 'none' }}
-              selectedKeys={getSelectedKeys()} // Устанавливаем выделенные ключи
+              selectedKeys={getSelectedKeys()}
             />
           </Space>
         ) : (
@@ -136,7 +152,6 @@ const HeaderComponent = ({ users }) => {
         )}
       </Header>
 
-      {/* Выдвижное меню для мобильных устройств */}
       <Drawer
         title="Меню"
         placement="right"
@@ -147,50 +162,47 @@ const HeaderComponent = ({ users }) => {
           mode="vertical"
           items={menuItems}
           onClick={() => closeDrawer(setMenuDrawerOpen)}
-          selectedKeys={getSelectedKeys()} // Устанавливаем выделенные ключи
+          selectedKeys={getSelectedKeys()}
         />
       </Drawer>
 
-      {/* Отступ для фиксированного хедера */}
       <div style={{ height: 64 }} />
 
-      {/* Drawer для участников */}
       <Drawer
-    title="Участники комнаты"
-    placement="right"
-    onClose={() => closeDrawer(setParticipantsDrawerOpen)}
-    open={participantsDrawerOpen}
-    width={300}
-  >
-    <List
-      itemLayout="horizontal"
-      dataSource={users}
-      renderItem={user => (
-        <List.Item key={user.userId}>
-          <List.Item.Meta
-            avatar={
-              <Avatar 
-                style={{ 
-                  backgroundColor: user.avatarColor || '#6ac185', 
-                  color: '#fff' 
-                }}
-              >
-                {user.username ? user.username[0].toUpperCase() : '?'}
-              </Avatar>
-            }
-            title={
-              <Typography.Text strong>
-                {user.username}
-              </Typography.Text>
-            }
-            description={user.email}
-          />
-        </List.Item>
-      )}
-    />
-  </Drawer>
+        title="Участники комнаты"
+        placement="right"
+        onClose={() => closeDrawer(setParticipantsDrawerOpen)}
+        open={participantsDrawerOpen}
+        width={300}
+      >
+        <List
+          itemLayout="horizontal"
+          dataSource={users}
+          renderItem={user => (
+            <List.Item key={user.userId}>
+              <List.Item.Meta
+                avatar={
+                  <Avatar
+                    style={{
+                      backgroundColor: user.avatarColor || '#6ac185',
+                      color: '#fff'
+                    }}
+                  >
+                    {user.username }
+                  </Avatar>
+                }
+                title={
+                  <Typography.Text strong>
+                    {user.username}
+                  </Typography.Text>
+                }
+                description={user.email}
+              />
+            </List.Item>
+          )}
+        />
+      </Drawer>
 
-      {/* Drawer для "Заметок" */}
       <Drawer
         title="Заметки"
         placement="right"
@@ -198,41 +210,54 @@ const HeaderComponent = ({ users }) => {
         open={notesDrawerOpen}
         width={400}
       >
-        <Typography.Title level={5}>
-          В разработке
-        </Typography.Title>
-        <ExclamationCircleOutlined style={{ fontSize: '32px', color: '#1890ff' }} />
+        <NotesDrawerContent closeDrawer={() => closeDrawer(setNotesDrawerOpen)} socket={socket} roomId={roomId} users={users} />
       </Drawer>
 
-      {/* Drawer для "Поделиться" */}
-      <Drawer
-        title="Поделиться"
-        placement="right"
-        onClose={() => closeDrawer(setShareDrawerOpen)}
-        open={shareDrawerOpen}
-        width={300}
+      <Modal
+        title="Пригласить в комнату"
+        visible={shareModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        footer={[
+          <Button key="back" onClick={handleCancel}>
+            Отмена
+          </Button>,
+          <Button key="copy" type="primary" icon={<CopyOutlined />} onClick={copyToClipboard}>
+            Копировать ссылку
+          </Button>,
+        ]}
       >
-        <Typography.Title level={5}>
-          В разработке
-        </Typography.Title>
-        <ExclamationCircleOutlined style={{ fontSize: '32px', color: '#1890ff' }} />
-      </Drawer>
+        <Typography.Paragraph>
+          Поделитесь этой ссылкой с другими, чтобы пригласить их в комнату:
+        </Typography.Paragraph>
+        <Input.Group compact>
+          <Input
+            style={{ width: 'calc(100% - 32px)' }}
+            value={`${window.location.origin}/room/${roomId}`}
+            readOnly
+          />
+          <Button icon={<CopyOutlined />} onClick={copyToClipboard} />
+        </Input.Group>
+      </Modal>
     </ConfigProvider>
   );
 };
 
 HeaderComponent.propTypes = {
+  roomId: PropTypes.string.isRequired,
+  socket: PropTypes.object.isRequired,
   users: PropTypes.arrayOf(
     PropTypes.shape({
       userId: PropTypes.number.isRequired,
       username: PropTypes.string.isRequired,
-      
+      email: PropTypes.string,
+      avatarColor: PropTypes.string,
     })
   ),
 };
 
 HeaderComponent.defaultProps = {
-  initialUsers: [],
+  users: [],
 };
 
 export default HeaderComponent;

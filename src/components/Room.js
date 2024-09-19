@@ -124,7 +124,7 @@ function Room() {
   return (
     <Layout  className="room-layout">
       {socket && users && (
-    <HeaderComponent roomId={roomId} users={users} />
+    <HeaderComponent roomId={roomId} users={users} socket={socket}/>
       )}
       <Content className="room-content"  style={{ padding: '0 24px', backgroundColor: '#f5f5f5' }}>
         {socket && <RoomStepper roomId={roomId} socket={socket} />}

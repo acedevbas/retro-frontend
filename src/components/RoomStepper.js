@@ -91,6 +91,7 @@ function RoomStepper({ roomId, socket }) {
   return (
     <div className="room-stepper-container">
       <div className="room-stepper-content">
+        
         <Steps current={loading ? -1 : activeStep} size="small" className="room-stepper-steps">
           {loading
             ? Array.from({ length: 5 }).map((_, index) => (
