@@ -7,6 +7,10 @@ WORKDIR /app
 # Копируем package.json и yarn.lock
 COPY package.json yarn.lock ./
 
+# Выводим содержимое package.json и yarn.lock для диагностики
+RUN cat package.json
+RUN cat yarn.lock
+
 # Устанавливаем зависимости с использованием yarn
 RUN yarn install --frozen-lockfile
 
