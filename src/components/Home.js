@@ -21,7 +21,7 @@ function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: roomName, template }),
+        body: JSON.stringify({ name: roomName }),
       });
 
       if (!response.ok) {
