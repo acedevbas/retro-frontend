@@ -1,5 +1,5 @@
 # Используем официальный образ Node.js
-FROM node:14
+FROM node:14 AS builder
 
 # Устанавливаем рабочую директорию в контейнере
 WORKDIR /app
@@ -8,13 +8,19 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 
 # Устанавливаем зависимости с использованием yarn
-RUN yarn install
+RUN yarn install --frozen-lockfile
 
 # Копируем исходный код приложения
 COPY . .
 
 # Собираем приложение с использованием yarn
 RUN yarn build
+
+# Используем минимальный образ для запуска
+FROM node:14-slim
+
+# Копируем собранное приложение из предыдущего этапа
+COPY --from=builder /app /app
 
 # Устанавливаем глобально serve для раздачи статики
 RUN yarn global add serve
