@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
 import PropTypes from 'prop-types';
-
 import {
   Card,
   Button,
@@ -11,17 +9,121 @@ import {
   Space,
   notification,
   Popover,
+  Skeleton,
 } from 'antd';
-
-import { DeleteOutlined, LikeOutlined, EllipsisOutlined } from '@ant-design/icons';
-
+import {
+  DeleteOutlined,
+  LikeOutlined,
+  EllipsisOutlined,
+} from '@ant-design/icons';
 import AvatarOrAnonymous from './AvatarOrAnonymous';
-
+import useUser from '../hooks/useUser';
 import './CardItem.css';
-
 import { LayoutGroup } from 'framer-motion';
 
 const { Paragraph } = Typography;
+const MIN_FONT_SIZE = 10;
+const EMOJI_REGEX = /([\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{1FB00}-\u{1FBFF}])/gu;
+
+const TextContainer = ({ fontSize, displayedText, textContainerRef, textContentRef }) => (
+  <div
+    ref={textContainerRef}
+    style={{
+      flex: '1 1 auto',
+      maxHeight: '100px',
+      overflow: 'hidden',
+    }}
+  >
+    <div
+      ref={textContentRef}
+      style={{
+        fontSize: `${fontSize}px`,
+        lineHeight: '1.5',
+        color: '#000',
+        marginBottom: 0,
+        whiteSpace: 'pre-wrap',
+        overflowWrap: 'break-word',
+      }}
+      dangerouslySetInnerHTML={{
+        __html: displayedText.replace(
+          EMOJI_REGEX,
+          "<span style='font-size: 1.5em;'>$1</span>"
+        ),
+      }}
+    />
+  </div>
+);
+
+TextContainer.propTypes = {
+  content: PropTypes.string.isRequired,
+  fontSize: PropTypes.number.isRequired,
+  displayedText: PropTypes.string.isRequired,
+  textContainerRef: PropTypes.object.isRequired,
+  textContentRef: PropTypes.object.isRequired,
+};
+
+const Actions = ({ isTextOverflowing, popoverContent, currentPhaseId, hasVoted, isCooldown, handleVote, confirmDeleteCard, cardData }) => (
+  <Space>
+    {isTextOverflowing && (
+      <Tooltip title="Показать полностью">
+        <Popover content={popoverContent} trigger="click">
+          <Button
+            type="text"
+            size="small"
+            icon={<EllipsisOutlined />}
+            style={{ fontSize: '16px' }}
+          />
+        </Popover>
+      </Tooltip>
+    )}
+    {currentPhaseId === 'Vote' && (
+      <Tooltip title={hasVoted ? 'Снять голос' : 'Голосовать'}>
+        <Button
+          type="text"
+          onClick={handleVote}
+          className={`${hasVoted ? 'icon-button icon-button-voted' : 'icon-button'} ${
+            isCooldown ? 'cooldown' : ''
+          }`}
+        >
+          <LikeOutlined />
+        </Button>
+      </Tooltip>
+    )}
+    {(currentPhaseId === 'Discussion' || currentPhaseId === 'Finish') && (
+      <Tooltip title="Голоса">
+        <Button type="text" className="icon-button icon-button-votes" disabled>
+          <Badge
+            count={cardData.votes || 0}
+            showZero
+            style={{ backgroundColor: '#1890ff' }}
+            offset={[0, 0]}
+          >
+            <LikeOutlined />
+          </Badge>
+        </Button>
+      </Tooltip>
+    )}
+    <Tooltip title="Удалить">
+      <Button type="text" onClick={confirmDeleteCard} className="icon-button">
+        <DeleteOutlined />
+      </Button>
+    </Tooltip>
+  </Space>
+);
+
+Actions.propTypes = {
+  isTextOverflowing: PropTypes.bool.isRequired,
+  popoverContent: PropTypes.node.isRequired,
+  currentPhaseId: PropTypes.string.isRequired,
+  hasVoted: PropTypes.bool.isRequired,
+  isCooldown: PropTypes.bool.isRequired,
+  handleVote: PropTypes.func.isRequired,
+  confirmDeleteCard: PropTypes.func.isRequired,
+  cardData: PropTypes.shape({
+    votes: PropTypes.number,
+    _id: PropTypes.string.isRequired,
+  }).isRequired,
+};
 
 const CardItem = ({
   card,
@@ -35,22 +137,18 @@ const CardItem = ({
   const [hasVoted, setHasVoted] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   const [isVoteCooldown, setIsVoteCooldown] = useState(false);
-  const [displayedText, setDisplayedText] = useState(cardData.content); // Отображаемый текст
-
-  // Состояния для размера шрифта и переполнения текста
-  const [fontSize, setFontSize] = useState(16); // Начальный размер шрифта
+  const [displayedText, setDisplayedText] = useState(cardData.content);
+  const [fontSize, setFontSize] = useState(16);
   const textContainerRef = useRef(null);
   const textContentRef = useRef(null);
-  const MIN_FONT_SIZE = 10; // Минимальный размер шрифта
+  const [isTextOverflowing, setIsTextOverflowing] = useState(false);
 
-  const [isTextOverflowing, setIsTextOverflowing] = useState(false); // Флаг переполнения текста
+  const { user, loading } = useUser(cardData.author);
 
-  // Устанавливаем hasVoted на основе актуальных данных
   useEffect(() => {
     setHasVoted(cardData.voters.includes(userId));
   }, [cardData.voters, userId]);
 
-  // Подписка на событие обновления голосов
   useEffect(() => {
     if (socket) {
       const handleUpdateVotes = ({ cardId, votes, voters }) => {
@@ -78,61 +176,37 @@ const CardItem = ({
     if (socket && cardData._id && !isVoting && !isVoteCooldown) {
       setIsVoting(true);
 
+      const handleVoteResponse = (response, successMessage) => {
+        setIsVoting(false);
+        if (response.error) {
+          notification.error({
+            message: 'Ошибка',
+            description: response.error,
+          });
+        } else {
+          notification.success({
+            message: successMessage,
+            description: `Вы успешно ${successMessage}.`,
+          });
+          setHasVoted(!hasVoted);
+          setIsVoteCooldown(true);
+          setTimeout(() => {
+            setIsVoteCooldown(false);
+          }, 2000);
+        }
+      };
+
       if (hasVoted) {
-        // Снимаем голос
         socket.emit(
           'removeVote',
           { roomId, cardId: cardData._id, userId },
-          (response) => {
-            setIsVoting(false);
-
-            if (response.error) {
-              notification.error({
-                message: 'Ошибка',
-                description: response.error,
-              });
-            } else {
-              notification.success({
-                message: 'Голос снят',
-                description: 'Вы успешно сняли свой голос.',
-              });
-
-              setHasVoted(false);
-
-              setIsVoteCooldown(true);
-              setTimeout(() => {
-                setIsVoteCooldown(false);
-              }, 2000);
-            }
-          }
+          (response) => handleVoteResponse(response, 'сняли голос')
         );
       } else {
-        // Добавляем голос
         socket.emit(
           'voteCard',
           { roomId, cardId: cardData._id, userId },
-          (response) => {
-            setIsVoting(false);
-
-            if (response.error) {
-              notification.error({
-                message: 'Ошибка',
-                description: response.error,
-              });
-            } else {
-              notification.success({
-                message: 'Голос учтён',
-                description: 'Вы успешно проголосовали.',
-              });
-
-              setHasVoted(true);
-
-              setIsVoteCooldown(true);
-              setTimeout(() => {
-                setIsVoteCooldown(false);
-              }, 2000);
-            }
-          }
+          (response) => handleVoteResponse(response, 'проголосовали')
         );
       }
     }
@@ -142,10 +216,6 @@ const CardItem = ({
     setCardToDelete(cardData._id);
   };
 
-  const emojiRegex =
-    /([\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{1FB00}-\u{1FBFF}])/gu;
-
-  // Контент для поповера
   const popoverContent = (
     <div style={{ maxWidth: '300px', wordWrap: 'break-word' }}>
       <Paragraph
@@ -161,64 +231,13 @@ const CardItem = ({
         <span
           dangerouslySetInnerHTML={{
             __html: cardData.content.replace(
-              emojiRegex,
+              EMOJI_REGEX,
               "<span style='font-size: 1.5em;'>$1</span>"
             ),
           }}
         />
       </Paragraph>
     </div>
-  );
-
-  // Блок действий
-  const actions = (
-    <Space>
-      {isTextOverflowing && (
-        <Tooltip title="Показать полностью">
-          <Popover content={popoverContent} trigger="click">
-            <Button
-              type="text"
-              size="small"
-              icon={<EllipsisOutlined />}
-              style={{ fontSize: '16px' }}
-            />
-          </Popover>
-        </Tooltip>
-      )}
-
-      {currentPhaseId === 'Vote' && (
-        <Tooltip title={hasVoted ? 'Снять голос' : 'Голосовать'}>
-          <Button
-            type="text"
-            onClick={handleVote}
-            className={`${hasVoted ? 'icon-button icon-button-voted' : 'icon-button'} ${
-              isCooldown ? 'cooldown' : ''
-            }`}
-          >
-            <LikeOutlined />
-          </Button>
-        </Tooltip>
-      )}
-      {(currentPhaseId === 'Discussion' || currentPhaseId === 'Finish') && (
-        <Tooltip title="Голоса">
-          <Button type="text" className="icon-button icon-button-votes" disabled>
-            <Badge
-              count={cardData.votes || 0}
-              showZero
-              style={{ backgroundColor: '#1890ff' }}
-              offset={[0, 0]}
-            >
-              <LikeOutlined />
-            </Badge>
-          </Button>
-        </Tooltip>
-      )}
-      <Tooltip title="Удалить">
-        <Button type="text" onClick={confirmDeleteCard} className="icon-button">
-          <DeleteOutlined />
-        </Button>
-      </Tooltip>
-    </Space>
   );
 
   useEffect(() => {
@@ -232,7 +251,6 @@ const CardItem = ({
         contentElement.style.fontSize = `${currentFontSize}px`;
         contentElement.textContent = textToDisplay;
 
-        // Сброс отображаемого текста
         setDisplayedText(cardData.content);
 
         const originalVisibility = contentElement.style.visibility;
@@ -240,7 +258,6 @@ const CardItem = ({
 
         const availableHeight = container.clientHeight;
 
-        // Уменьшаем размер шрифта до минимального, пока текст не поместится по высоте
         while (
           contentElement.scrollHeight > availableHeight &&
           currentFontSize > MIN_FONT_SIZE
@@ -251,11 +268,16 @@ const CardItem = ({
 
         setFontSize(currentFontSize);
 
-        // Если текст всё ещё переполняет контейнер при минимальном размере шрифта
-        if (currentFontSize === MIN_FONT_SIZE && contentElement.scrollHeight > availableHeight) {
-          while (contentElement.scrollHeight > availableHeight && textToDisplay.length > 0) {
-            textToDisplay = textToDisplay.slice(0, -1); // Убираем по одному символу с конца
-            contentElement.textContent = textToDisplay + '...'; // Применяем текст с многоточием
+        if (
+          currentFontSize === MIN_FONT_SIZE &&
+          contentElement.scrollHeight > availableHeight
+        ) {
+          while (
+            contentElement.scrollHeight > availableHeight &&
+            textToDisplay.length > 0
+          ) {
+            textToDisplay = textToDisplay.slice(0, -1);
+            contentElement.textContent = textToDisplay + '...';
           }
           setDisplayedText(textToDisplay + '...');
           setIsTextOverflowing(true);
@@ -275,7 +297,7 @@ const CardItem = ({
     <LayoutGroup>
       <Card
         style={{
-          height: '200px', // Высота карточки
+          height: '200px',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
@@ -291,76 +313,60 @@ const CardItem = ({
           flexDirection: 'column',
         }}
       >
-        {/* Заголовок карточки с аватаркой */}
         <Card.Meta
           avatar={
             <AvatarOrAnonymous
-              authorName={cardData.authorName}
+              author={cardData.author}
               currentPhaseId={currentPhaseId}
               size={48}
             />
           }
           title={
-            ['Discussion', 'Finish'].includes(currentPhaseId)
-              ? cardData.authorName
-              : 'Аноним'
+            loading ? (
+              <Skeleton.Input active size="small" style={{ width: 100 }} />
+            ) : ['Discussion', 'Finish'].includes(currentPhaseId) ? (
+              user?.username || 'Неизвестный пользователь'
+            ) : (
+              'Аноним'
+            )
           }
           style={{ marginBottom: '10px' }}
         />
-
-        {/* Контейнер для текста и действий */}
         <div
           style={{
             flex: '1 1 auto',
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden', // Ограничиваем переполнение
+            overflow: 'hidden',
           }}
         >
-          {/* Текстовый контейнер с фиксированной высотой */}
-          <div
-            ref={textContainerRef}
-            style={{
-              flex: '1 1 auto',
-              maxHeight: '100px', // Фиксированная максимальная высота текста
-              overflow: 'hidden', // Скрываем переполнение
-            }}
-          >
-            <div
-              ref={textContentRef}
-              style={{
-                fontSize: `${fontSize}px`,
-                lineHeight: '1.5',
-                color: '#000',
-                marginBottom: 0,
-                whiteSpace: 'pre-wrap',
-                overflowWrap: 'break-word',
-              }}
-              dangerouslySetInnerHTML={{
-                __html: displayedText.replace(
-                  emojiRegex,
-                  "<span style='font-size: 1.5em;'>$1</span>"
-                ),
-              }}
-            />
-          </div>
-
-
-          {/* Блок действий */}
+          <TextContainer
+            content={cardData.content}
+            fontSize={fontSize}
+            displayedText={displayedText}
+            textContainerRef={textContainerRef}
+            textContentRef={textContentRef}
+          />
           <div
             style={{
-              marginTop: 'auto', // Прижимаем блок действий к низу
-            
+              marginTop: 'auto',
               display: 'flex',
               justifyContent: 'flex-end',
               alignItems: 'center',
               flexShrink: 0,
             }}
-          
           >
-            {actions}
+            <Actions
+              isTextOverflowing={isTextOverflowing}
+              popoverContent={popoverContent}
+              currentPhaseId={currentPhaseId}
+              hasVoted={hasVoted}
+              isCooldown={isCooldown}
+              handleVote={handleVote}
+              confirmDeleteCard={confirmDeleteCard}
+              cardData={cardData}
+            />
           </div>
-          
         </div>
       </Card>
     </LayoutGroup>
@@ -372,7 +378,7 @@ CardItem.propTypes = {
     _id: PropTypes.string.isRequired,
     content: PropTypes.string.isRequired,
     author: PropTypes.string.isRequired,
-    authorName: PropTypes.string.isRequired,
+    authorName: PropTypes.string, // Удалено, т.к. теперь используется хук useUser
     votes: PropTypes.number,
     voters: PropTypes.arrayOf(PropTypes.string).isRequired,
   }).isRequired,
@@ -381,11 +387,6 @@ CardItem.propTypes = {
   socket: PropTypes.object.isRequired,
   roomId: PropTypes.string.isRequired,
   setCardToDelete: PropTypes.func.isRequired,
-  rank: PropTypes.number,
-};
-
-CardItem.defaultProps = {
-  rank: null,
 };
 
 export default React.memo(CardItem);

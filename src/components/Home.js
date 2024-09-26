@@ -5,7 +5,7 @@ import { Typography, Button, Space, Modal, Input, Row, Col, Tooltip } from 'antd
 import { RocketOutlined, FileTextOutlined, CommentOutlined, AppstoreOutlined, GoogleOutlined } from '@ant-design/icons';
 import { Player } from '@lottiefiles/react-lottie-player';
 import lottieAnimation from '../animations/teamwork-and-stickers.json';
-import SVGComponent from './SVGComponent';
+import SVGComponent from './RoomPage/logo-full';
 
 function Home() {
   const navigate = useNavigate();

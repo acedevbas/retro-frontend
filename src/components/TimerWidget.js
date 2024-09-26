@@ -277,13 +277,7 @@ useEffect(() => {
           />
         </div>
         <div className="button-container">
-          <Button
-            type="default"
-            onClick={() => incrementTime(5)}
-            disabled={isRunning}
-          >
-            +00:05
-          </Button>
+
           <Button
             type="default"
             onClick={() => incrementTime(30)}

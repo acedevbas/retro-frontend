@@ -1,37 +1,306 @@
-/* ColumnManager.css */
-.card-enter {
+/* Общие стили */
+.column-manager {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  width: 100%;
+  overflow-x: hidden; /* Убираем горизонтальный скроллбар */
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* Стиль для контейнера ожидания */
+.waiting-message-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 100px 24px;
+}
+
+.waiting-message-container .ant-typography {
+  margin-bottom: 16px;
+}
+
+/* Контейнер для финального этапа */
+.finish-phase-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.finish-phase-container .finish-phase-content {
+  width: 100%;
+  padding: 0 20px 20px 20px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.finish-phase-container .finish-title {
+  font-size: 32px;
+  font-weight: bold;
+}
+.finish-phase-container .finish-subtitle {
+  font-size: 18px;
+  color: #6c757d;
+}
+.finish-phase-container .finish-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+.finish-phase-container .results-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: space-between;
+}
+.finish-phase-container .cards-container {
+  flex: 1 1 400px;
+  max-width: 800px; /* Ограничиваем максимальную ширину карточек */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Стили для карточек результатов */
+.finish-phase-container .result-card {
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 4px 12px;
+  overflow: hidden;
+  transition: transform 0.2s;
+  max-width: 100%; /* Ограничиваем ширину карточек */
+}
+.finish-phase-content {
+    /* Убираем максимальную ширину */
+    max-width: 1600px;
+    /* Устанавливаем ширину на 100% для заполнения всего доступного пространства */
+    width: 100%;
+    /* Добавляем отступы для эстетического вида */
+    padding: 20px;
+    /* Центрируем контент по горизонтали */
+    margin: 0 auto;
+}
+/* Заголовок на этапе "Finish" */
+.finish-header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.finish-image {
+  width: 150px;
+  margin-bottom: 24px;
+}
+
+.finish-title {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.finish-subtitle {
+  font-size: 18px;
+  color: #6c757d;
+}
+
+/* Контейнер для диаграммы */
+.finish-phase-container .chart-container {
+  flex: 1 1 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+  from {
     opacity: 0;
-    transform: scale(0.9);
-  }
-  
-  .card-enter-active {
+    transform: translateY(-20px);
+  } to {
     opacity: 1;
-    transform: scale(1);
-    transition: opacity 500ms, transform 500ms;
+    transform: translateY(0);
   }
-  
-  .card-exit {
-    opacity: 1;
-    transform: scale(1);
+}
+
+/* Кнопки действий на этапе "Finish" */
+.finish-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.finish-actions .ant-btn {
+  height: 48px;
+  font-size: 16px;
+}
+
+/* **Измененная компоновка результатов** */
+.results-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+/* Контейнер для карточек (слева) */
+.cards-container {
+  flex: 1 1 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Стили для списка результатов */
+.result-card {
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 4px 12px;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.result-card:hover {
+  transform: translateY(-4px);
+}
+
+.card-content {
+  padding: 16px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-text-content {
+  flex: 1;
+  margin-left: 16px;
+}
+
+.card-column-name {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.card-text {
+  font-size: 14px;
+  color: #595959;
+}
+
+.card-votes {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+}
+
+/* Контейнер для диаграммы (справа) */
+.chart-container {
+  flex: 1 1 35%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+.chart-container .ant-typography {
+  margin-bottom: 16px;
+}
+
+/* Контейнер для колонок */
+.columns-container {
+  display: flex;
+  gap: 24px; /* Отступы между колонками */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Каждая колонка */
+.custom-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.column-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Медиазапросы для адаптивности */
+@media (max-width: 1024px) {
+  .finish-phase-container .results-container {
+    flex-direction: column;
   }
-  
-  .card-exit-active {
+
+  .finish-phase-container .cards-container,
+  .finish-phase-container .chart-container {
+    flex: 1 1 100%;
+  }
+
+  .finish-phase-container .finish-actions .ant-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .finish-phase-container .finish-title {
+    font-size: 24px;
+  }
+
+  .finish-phase-container .finish-subtitle {
+    font-size: 16px;
+  }
+
+  .finish-phase-container .finish-actions {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .finish-phase-container .finish-actions .ant-btn {
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .finish-phase-container .cards-container,
+  .finish-phase-container .chart-container {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .finish-phase-container .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .finish-phase-container .card-text-content {
+    margin-left: 0;
+    margin-top: 8px;
+  }
+
+  .finish-phase-container .card-votes {
+    margin-left: 0;
+    margin-top: 8px;
+  }
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+  from {
     opacity: 0;
-    transform: scale(0.9);
-    transition: opacity 500ms, transform 500ms;
+    transform: translateY(-20px);
+  } to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .fade-enter {
-  opacity: 0;
-}
-.fade-enter-active {
-  opacity: 1;
-  transition: opacity 500ms;
-}
-.fade-exit {
-  opacity: 1;
-}
-.fade-exit-active {
-  opacity: 0;
-  transition: opacity 300ms;
 }

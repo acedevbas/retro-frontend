@@ -1,10 +1,28 @@
 /* Room.css */
 .room-layout {
-    min-height: 100vh;
-  }
-  
-  .room-content {
-    min-height: calc(100vh - 64px); /* Вычитаем высоту header */
-    display: flex;
-    flex-direction: column;
-  }
+  min-height: 100vh;
+}
+
+.room-content {
+  min-height: calc(100vh - 64px); /* Вычитаем высоту header */
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  margin-left: 0;
+  transition: margin-left 0.3s;
+}
+
+.room-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.custom-layout.drawer-open .room-content {
+  margin-left: 200px; /* Ширина выдвижной панели */
+}
+
+.custom-layout .room-content {
+  margin-left: 40px; /* Отступ для торчащей части боковой панели */
+}

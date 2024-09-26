@@ -1,0 +1,120 @@
+.list {
+    width: 100%;
+}
+
+.card {
+    border-radius: 8px;
+    margin-bottom: 16px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    border: 1px solid #f0f0f0;
+    width: 100%;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.title {
+    margin: 0;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 400px; /* Adjust the width as needed */
+}
+
+.title-input {
+    font-size: inherit;
+    font-weight: bold;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
+    border: none;
+}
+
+.date-picker {
+    margin-right: 0; /* Убираем отступ справа */
+}
+
+.delete-button {
+    margin-left: 8px;
+    color: red;
+}
+
+.panel-content {
+    margin-top: 16px;
+    padding: 16px;
+}
+
+.text-area {
+    padding: 8px;
+    margin-top: 8px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    border: 1px solid #d9d9d9;
+    width: 100%;
+}
+
+.select {
+    width: 100%;
+    margin-top: 8px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    border: 1px solid #d9d9d9;
+}
+
+.empty-card {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.empty-icon {
+    font-size: 24px;
+    color: #d9d9d9;
+    margin-bottom: 8px;
+}
+
+.delete-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: flex-end; /* Прижимаем элементы к правому краю */
+}
+
+.note-text {
+    flex-grow: 1;
+    margin-right: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px!important; /* Устанавливаем фиксированную ширину */
+}
+
+.created-date {
+    display: flex;
+    align-items: center;
+    white-space: nowrap; /* Prevent date from wrapping */
+}
+
+.ant-picker-clear {
+    right: 0px; /* Прижимаем крестик для сброса к правому краю */
+}

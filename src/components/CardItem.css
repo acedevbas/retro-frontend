@@ -1,58 +1,64 @@
 /* CardItem.css */
 
-.icon-button {
-    color: rgba(0, 0, 0, 0.65);
-    transition: color 0.3s, background-color 0.3s;
-    font-size: 16px; /* Это изначальный размер иконок */
-    height: 30px;    /* Устанавливаем высоту кнопки */
-    width: 30px;     /* Устанавливаем ширину кнопки (равную высоте) */
+.card-actions {
     display: flex;
+    justify-content: flex-end;
     align-items: center;
-    justify-content: center;
-    border-radius: 8px; /* Скругляем углы кнопки */
-    padding: 0;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-}
-
-.icon-button:hover {
-    color: rgba(0, 0, 0, 0.85);
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-.icon-button-voted {
-    background-color: #1677ff;
-    color: white;
-}
-
-.icon-button-voted:hover {
-    background-color: #1355b4;
-}
-
-.icon-button.cooldown {
-    /* Во время кулдауна кнопка выглядит как обычно */
-    pointer-events: none; /* Блокируем взаимодействие */
-}
-
-.icon-button.cooldown:hover {
-    /* При наведении на заблокированную кнопку */
-    cursor: not-allowed; /* Курсор "запрещено" */
-}
-
-.icon-button.cooldown .anticon {
-    color: inherit;
-}
-
-.icon-button .anticon {
-    font-size: 16px; /* Возвращаем размер иконки к исходному */
-    color: inherit;  /* Иконка наследует цвет текста кнопки */
-}
-
-.icon-button-votes{
-    pointer-events: none;
-}
-
-.icon-button-votes>span{
-    color: rgba(0, 0, 0, 0.65);
-}
+  }
+  
+  .icon-button {
+    font-size: 16px;
+    color: #8c8c8c;
+    transition: color 0.3s;
+  }
+  
+  .icon-button:hover {
+    color: #1890ff;
+  }
+  
+  .icon-button-voted {
+    color: #1890ff;
+  }
+  
+  .icon-button-votes {
+    color: #1890ff;
+  }
+  
+  .cooldown {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  .card-item {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-item:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-item .ant-card-meta-title {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .card-item .ant-card-meta-avatar {
+    margin-right: 10px;
+  }
+  
+  .card-item .ant-card-meta-description {
+    font-size: 14px;
+    color: #595959;
+  }
+  
+  .card-item .ant-card-body {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }

@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 
 const { Title } = Typography;
 
-function LoginModal({ visible, onLogin }) {
+function LoginModal({ open, onLogin }) {
   const [form] = Form.useForm();
 
   const handleFinish = (values) => {
@@ -14,7 +14,7 @@ function LoginModal({ visible, onLogin }) {
 
   return (
     <Modal
-      open={visible}
+      open={open}
       footer={null}
       closable={false}
       centered
@@ -43,7 +43,7 @@ function LoginModal({ visible, onLogin }) {
 }
 
 LoginModal.propTypes = {
-  visible: PropTypes.bool.isRequired,
+  open: PropTypes.bool.isRequired,
   onLogin: PropTypes.func.isRequired,
 };
 

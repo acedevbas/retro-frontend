@@ -1,0 +1,22 @@
+/* EditableRoomName.css */
+
+.editable-room-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px; /* Добавим отступ снизу */
+  }
+  
+  .editable-room-name .ant-typography {
+    display: flex;
+    align-items: center;
+    margin: 0;
+  }
+  
+  .editable-room-name .ant-input {
+    max-width: 300px;
+  }
+  
+  .editable-room-name .ant-btn {
+    margin-left: 8px;
+  }

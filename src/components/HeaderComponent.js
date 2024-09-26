@@ -213,32 +213,7 @@ const HeaderComponent = ({ roomId, users, socket }) => {
         <NotesDrawerContent closeDrawer={() => closeDrawer(setNotesDrawerOpen)} socket={socket} roomId={roomId} users={users} />
       </Drawer>
 
-      <Modal
-        title="Пригласить в комнату"
-        visible={shareModalVisible}
-        onOk={handleOk}
-        onCancel={handleCancel}
-        footer={[
-          <Button key="back" onClick={handleCancel}>
-            Отмена
-          </Button>,
-          <Button key="copy" type="primary" icon={<CopyOutlined />} onClick={copyToClipboard}>
-            Копировать ссылку
-          </Button>,
-        ]}
-      >
-        <Typography.Paragraph>
-          Поделитесь этой ссылкой с другими, чтобы пригласить их в комнату:
-        </Typography.Paragraph>
-        <Input.Group compact>
-          <Input
-            style={{ width: 'calc(100% - 32px)' }}
-            value={`${window.location.origin}/room/${roomId}`}
-            readOnly
-          />
-          <Button icon={<CopyOutlined />} onClick={copyToClipboard} />
-        </Input.Group>
-      </Modal>
+ 
     </ConfigProvider>
   );
 };

@@ -1,86 +1,80 @@
 /* Контейнер для всей формы */
 .add-card-form {
-    margin-bottom: 16px;
-  }
-  
-  /* Контейнер для текстовой области с относительным позиционированием */
-  .text-area-container {
-    position: relative;
-  }
-  
-  /* Стиль текстовой области */
-  .text-area {
-    padding-right: 50px;
-    border-radius: 8px;
-    border: 1px solid #d9d9d9;
-    resize: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  
-  .text-area:focus {
-    border-color: #40a9ff;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-  }
-  
-  /* Кнопка эмодзи */
-  .emoji-button {
-    position: absolute;
-    right: 8px;
-    top: 8px;
-    font-size: 22px;
-    color: #8c8c8c;
-    transition: color 0.3s;
-  }
-  
-  .emoji-button:hover {
-    color: #1890ff;
-  }
-  
-  /* Контент пикера эмодзи */
-  .emoji-picker {
-    display: flex;
-    flex-wrap: wrap;
-    max-width: 220px;
-  }
-  
-  .emoji-item {
-    font-size: 24px;
-    cursor: pointer;
-    margin: 5px;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: background-color 0.2s, transform 0.1s;
-  }
-  
-  .emoji-item:hover {
-    background-color: #f5f5f5;
-    transform: scale(1.1);
-  }
-  
-  /* Кнопка добавления карточки */
-  .add-card-button {
-    border-radius: 8px;
-    height: 44px;
-    font-size: 16px;
-    font-weight: 500;
-  }
-  
-  /* Адаптивные настройки */
-  @media (max-width: 576px) {
-    .emoji-picker {
-      max-width: 100%;
-    }
-  
-    .emoji-button {
-      right: 4px;
-      top: 4px;
-    }
-  
-    .text-area {
-      padding-right: 48px;
-    }
-  }
+  margin-bottom: 24px;
+}
+
+/* Контейнер для текстовой области с относительным позиционированием */
+.text-area-container {
+  position: relative;
+}
+
+/* Стиль текстовой области */
+.text-area {
+  padding-right: 50px;
+  border-radius: 8px;
+  border: 1px solid #d9d9d9;
+  resize: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.text-area:focus {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Кнопка эмодзи */
+.emoji-button {
+  position: absolute;
+  right: 8px;
+  top: 20px;
+  font-size: 22px;
+  color: #8c8c8c;
+  transition: color 0.3s;
+  z-index: 2;
+}
+
+.emoji-button:hover {
+  color: #1890ff;
+}
+
+/* Стиль эмодзи-пикера */
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 220px;
+}
+
+.emoji-item {
+  font-size: 24px;
+  cursor: pointer;
+  margin: 5px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.emoji-item:hover,
+.emoji-item:focus {
+  background-color: #f5f5f5;
+  transform: scale(1.1);
+  outline: none;
+}
+
+/* Кнопка добавления карточки */
+.add-card-button {
+  border-radius: 8px;
+  height: auto;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  width: 100%;
+}
+
+/* Стиль сообщения об ошибке */
+.ant-alert {
+  margin-top: -8px;
+}

@@ -1,0 +1,70 @@
+/* Анимации для логотипа */
+@keyframes logoExpand {
+  from {
+    width: 60px;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes logoCollapse {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 60px;
+  }
+}
+
+/* Общие стили для контейнеров логотипов */
+.logoContainer {
+
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Индивидуальные стили для мини и полного логотипов */
+.logoMiniContainer {
+  width: 60px;
+}
+
+.logoFullContainer {
+  width: 100%;
+}
+
+/* Анимации для контейнеров логотипов */
+.logoExpand {
+  animation: logoExpand 0.3s forwards;
+}
+
+.logoCollapse {
+  animation: logoCollapse 0.3s forwards;
+}
+
+/* Стили для элементов участников */
+.participant-item {
+  cursor: default !important;
+  display: flex !important;
+  align-items: center !important;
+  background-color: transparent !important;
+  padding-left: 24px !important;
+  /* Убираем эффект наведения */
+  transition: none !important;
+}
+
+.participant-item:hover {
+  background-color: transparent !important;
+}
+
+.participant-name {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Убираем иконку блокировки у отключенных элементов */
+.ant-menu-item-disabled.ant-menu-item::after {
+  border: none !important;
+}
